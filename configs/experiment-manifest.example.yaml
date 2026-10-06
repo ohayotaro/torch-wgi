@@ -1,0 +1,201 @@
+schema_version: "0.1"
+# Template only. Null fields must be populated before an experiment is accepted.
+experiment_id: null
+status: NOT_RUN
+phase: null
+gate_ids: []
+issue_number: null
+pull_request_number: null
+protocol_version: "0.1-proposed"
+created_at_utc: null
+operator: null
+independent_reviewer: null
+
+provenance:
+  repository: ohayotaro/torch-wgi
+  code_commit_sha: null
+  dirty_worktree: null
+  configuration_path: null
+  configuration_sha256: null
+  geometry_sha256: null
+  phantom_sha256: null
+  input_data_uri: null
+  input_data_sha256: null
+  output_artifact_uri: null
+  output_artifact_sha256: null
+  container_image_digest: null
+  dependency_lock_sha256: null
+  reproduction_command: null
+
+environment:
+  operating_system: null
+  python_version: null
+  pytorch_version: null
+  numpy_version: null
+  scipy_version: null
+  gate_version: null
+  geant4_version: null
+  cpu_model: null
+  cpu_cores_used: null
+  gpu_model: null
+  gpu_count: null
+  gpu_memory_bytes: null
+  cuda_runtime_version: null
+  gpu_driver_version: null
+  dtype_geometry: null
+  dtype_response: null
+  dtype_reduction: null
+  deterministic_algorithms: null
+  compiler_options: null
+
+physics:
+  units: {length: mm, energy: keV, time: ns}
+  activity_parameterization: expected_decays_during_acquisition
+  isotope_or_ideal_source: null
+  emission_lines_and_branching_source: null
+  branching_probability: null
+  expected_decays: null
+  acquisition_time_s: null
+  positron_range_model: null
+  noncollinearity_model: null
+  material_compositions_and_densities: null
+  attenuation_data_source_and_version: null
+  physics_list: null
+  active_process_models_and_energy_ranges: null
+  geant4_data_library_versions: null
+  production_cuts_by_region: null
+  step_limits_if_used: null
+  atomic_relaxation: null
+  doppler_model: null
+  scattering_multiplicity_model: null
+  detector_readout_srf: null
+  energy_thresholds_and_windows: null
+  coincidence_time_window_ns: null
+  dead_time_randoms_pileup_model: null
+  known_omitted_components: []
+  omitted_accepted_fraction_upper_ci: null
+  omitted_component_task_impact: null
+
+observation_contract:
+  event_classes: []
+  mutually_exclusive_classes: true
+  observable_table_schema: null
+  diagnostic_truth_table_schema: null
+  latent_variables_marginalized: []
+  sensitivity_observation_measure: null
+  probability_normalization_convention: null
+  image_coefficient_basis_and_inner_product: null
+  observed_true_doi_or_order_leakage: false
+  event_building_definition: null
+  events_per_decay_rule: null
+
+design:
+  geometry_family: null
+  parameter_names: []
+  initial_parameters: null
+  final_parameters: null
+  parameter_units_and_scales: null
+  feasible_bounds: null
+  ring_pitch_channel_closure_constraint: null
+  material_channel_power_aperture_constraints: null
+  manufacturing_tolerances: null
+  hard_or_relaxed_geometry: null
+  relaxation_to_hard_gap: null
+  topology_rounding_and_reoptimization: null
+
+numerics:
+  seed_source: null
+  seed_transport: null
+  seed_quadrature: null
+  seed_optimizer: null
+  seed_validation: null
+  independent_final_test_seeds: null
+  common_random_number_scheme: null
+  artificial_tau_geometry_mm: null
+  artificial_tau_readout: null
+  physical_srf_widths: null
+  line_quadrature_rule_and_count: null
+  transverse_quadrature_rule_and_count: null
+  detector_volume_quadrature: null
+  attenuation_quadrature: null
+  observation_proposal_density: null
+  proposal_support_coverage: null
+  jacobian_and_importance_weight_handling: null
+  support_truncation_and_gradient_bound: null
+  event_chunk_size: null
+  image_tile_shape: null
+  spatial_interpolation: null
+  checkpoint_configuration: null
+  probability_floor_and_sensitivity_study: null
+  covariance_jitter_and_sensitivity_study: null
+  fallback_events_and_reasons: null
+
+statistics:
+  split_role: null  # calibration / development / validation / final_test
+  split_definition_sha256: null
+  simulated_primary_histories: null
+  accepted_events: null
+  history_weighting_and_clustering: null
+  independent_replicates: null
+  pilot_or_confirmatory: null
+  preregistered_primary_metric: null
+  preregistered_strata: null
+  power_or_precision_calculation: null
+  confidence_level: 0.95
+  confidence_interval_method: null
+  multiple_comparison_method: null
+  preregistered_equivalence_margins: null
+  optional_stopping_policy: null
+  final_test_access_log: null
+
+task:
+  lesion_templates_and_contrasts: null
+  background_and_nuisance_distribution: null
+  prior_information_matrix: null
+  fisher_observation_binning: null
+  observation_binning_convergence: null
+  mlem_initialization: null
+  mlem_stopping_and_postfilter_rule: null
+  image_voxel_size_mm: null
+  observer_type: null
+  observer_train_validation_test_split: null
+  crc_definition: null
+  cnr_ensemble_definition: null
+  primary_detection_metric: null
+  optimization_starts_and_budget: null
+  all_candidate_results_uri: null
+
+performance:
+  work_product_and_accuracy_budget: null
+  cold_start_wall_s: null
+  compilation_wall_s: null
+  calibration_mc_wall_s: null
+  preprocessing_wall_s: null
+  io_wall_s: null
+  forward_wall_s: null
+  backward_wall_s: null
+  mlem_iteration_wall_s: null
+  total_wall_s: null
+  cpu_core_hours: null
+  gpu_hours: null
+  peak_host_memory_bytes: null
+  peak_gpu_allocated_bytes: null
+  peak_gpu_reserved_bytes: null
+  gpu_timing_synchronized: null
+  timed_repetitions: null
+  timing_median_s: null
+  timing_p95_s: null
+  baseline_configuration_and_cost: null
+
+results: []
+# Each result entry must contain gate_id, metric, estimate, units,
+# uncertainty/CI, denominator, threshold, PASS/FAIL/INCONCLUSIVE,
+# and a source artifact/hash. Never replace unrun values with zero.
+model_discrepancy_ledger: []
+protocol_deviations: []
+review:
+  independence_statement: null
+  reproduced_code_and_data_hashes: null
+  decision: NOT_RUN
+  evidence_uri: null
+  reviewed_at_utc: null
