@@ -1,0 +1,190 @@
+schema_version: "0.1"
+protocol_version: "0.1-proposed"
+created_on: "2026-10-06"
+status: NOT_RUN
+threshold_origin: proposed_research_engineering_targets_not_external_standards
+claim: "No simulator implementation, tests, MC comparisons or optimization results have been completed."
+roadmap: docs/engineering-validation-roadmap.ja.md
+tracking_issue: 5
+outcomes: [NOT_RUN, PASS, FAIL, INCONCLUSIVE]
+policy:
+  freeze_before_final_holdout: true
+  record_changes_with_reason_and_new_holdout: true
+  confidence_level: 0.95
+  signed_equivalence: "Entire CI must be inside [-margin, +margin]."
+  nonnegative_distance: "Upper confidence limit must not exceed threshold."
+  underpowered_result: INCONCLUSIVE
+  multiple_comparisons: "Preregister primary strata; use simultaneous CIs or a prespecified hierarchy."
+  no_posthoc_acceptance_inflation: true
+  required_evidence:
+    - code_commit_sha
+    - config_sha256
+    - data_sha256
+    - environment_and_physics_models
+    - seeds_and_quadrature
+    - metric_definition
+    - estimate_and_uncertainty
+    - reproduction_command
+    - independent_review
+
+phase1:
+  issue: 1
+  status: NOT_RUN
+  reference: cpu_float64_independent_subvoxel_quadrature
+  cases:
+    random_geometries: 50
+    directions_per_geometry: 20
+    include: [tangent_neighborhood, crystal_edge, gap, thin_crystal, broad_cone, near_zero_sensitivity]
+  gates:
+    G1_gradient:
+      scalar_and_parameter_nondimensionalization: required
+      fd_steps: [0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001]
+      adjacent_stable_steps_min: 2
+      relative_error_p95_max: 0.0001
+      relative_error_max: 0.001
+      near_zero_absolute_error_max: 0.00000001
+      gradcheck_all_regular_fixtures: true
+    G1_adjoint:
+      norm: "abs(<Af,y>_Y-<f,A*y>_X)/(norm(Af)_Y*norm(y)_Y+norm(f)_X*norm(A*y)_X+eps)"
+      weighted_adjoint: "M_X^-1 A^T M_Y; A^T only for Euclidean coefficient contracts"
+      cpu_float64_max: 0.0000000001
+      gpu_float32_max: 0.00001
+    G1_reference:
+      count_weighted_l1_relative_max: 0.005
+      stable_nonzero_directional_gradient_relative_max: 0.02
+      fallback: direct_finite_width_tube_quadrature
+    G1_quadrature:
+      forward_relative_change_on_refinement_max: 0.005
+      gradient_relative_change_on_refinement_max: 0.02
+    G1_probability:
+      toy_accepted_plus_lost_residual_max: 0.000001
+      negative_probability_count_max: 0
+      nonfinite_count_max: 0
+      spatial_normalization_of_joint_likelihood: forbidden
+    G1_tau:
+      artificial_tau_to_feature_pitch: [0.25, 0.125, 0.0625, 0.03125, 0.015625]
+      initial_local_spacing_to_tau_max: 0.25
+      spacing_rule_is_sufficient_without_convergence_test: false
+      physical_srf_annealing: forbidden
+      final_two_objective_relative_change_max: 0.01
+      stable_nonzero_gradient_cosine_min: 0.99
+      hard_reference_sensitivity_relative_gap_max: 0.01
+      hard_reference_objective_relative_gap_max: 0.01
+
+phase2:
+  issue: 2
+  status: NOT_RUN
+  requires: [G1_gradient, G1_adjoint, G1_reference, G1_quadrature, G1_probability, G1_tau]
+  subgates:
+    G2A: defined_simplified_physics
+    G2B: all_accepted_responses_in_claimed_optimization_domain
+  statistical_targets:
+    sensitivity_relative_standard_error_max: 0.005
+    primary_stratum_relative_ci_halfwidth_max: 0.02
+    accepted_events_heuristic_for_unweighted_rare_events: 40000
+    correlated_history_and_importance_weights: must_be_accounted_for
+  gates:
+    G2_physics:
+      slab_probability_relative_margin: 0.01
+      sensitivity_relative_margin: 0.05
+      normalized_shape_tv_max: 0.05
+      primary_bin_count_relative_margin: 0.10
+      energy_centroid_fraction_of_reference_energy_margin: 0.01
+      energy_fwhm_relative_margin: 0.05
+      arm_fwhm_relative_margin: 0.05
+      arm_centroid_fraction_of_reference_fwhm_margin: 0.10
+      ideal_spatial_fwhm_relative_margin: 0.05
+      full_response_spatial_fwhm_relative_margin: 0.10
+      tail_width_relative_margin: 0.15
+      preregistered_tail_probability_absolute_margin: 0.02
+      physics_cut_or_quadrature_refinement_relative_change_max: 0.01
+    G2_omitted_components:
+      accepted_fraction_upper_ci_max: 0.01
+      add_remove_relative_task_impact_max: 0.02
+      decision_on_failure: add_physics_or_observable_rejection_then_revalidate
+    G2_geometry_derivatives:
+      geometry_neighborhoods_min: 5
+      adequately_powered_nonzero_directions_min: 10
+      all_design_variables_covered: true
+      sign_agreement_fraction_min: 0.90
+      magnitude_relative_error_median_max: 0.15
+      magnitude_relative_error_p90_max: 0.30
+      finite_difference_step_bias_check: required
+      unresolved_direction_is_pass: false
+    G2_performance:
+      gate_type: engineering_target_separate_from_physics_acceptance
+      comparable_output_and_error_budget: required
+      practical_speedup_target: 10.0
+      stretch_speedup_target: 100.0
+      calibration_and_initialization_costs_included: true
+
+phase3:
+  issue: 3
+  status: NOT_RUN
+  requires: [G2B, G2_geometry_derivatives]
+  objective: nuisance_adjusted_poisson_fisher
+  fair_comparison:
+    fixed: [source_decays, acquisition_time, manufacturing_constraints]
+    accepted_count_normalization: forbidden_for_primary_comparison
+    event_classes: mutually_exclusive
+    latent_truth_in_observer: forbidden
+  design:
+    one_dimensional_reference_grid_initial_size: 61
+    one_dimensional_optimizer_starts_min: 8
+    mc_reference_geometry_count_range: [9, 13]
+    multivariable_optimizer_starts_min: 16
+    integer_channel_count: outer_discrete_search_or_explicit_relax_round_revalidate
+  gates:
+    G3_numerical:
+      one_dimensional_fisher_regret_max: 0.01
+      same_readout_analytic_mc_fisher_relative_margin: 0.10
+      all_manufacturing_constraints_satisfied: true
+      final_hard_geometry_independent_mc: required
+    G3_detection:
+      independent_holdout: required
+      primary_relative_gain_point_target_for_fisher_or_dprime: 0.10
+      gain_lower_confidence_bound_strictly_above: 0.0
+      primary_important_stratum_relative_noninferiority_margin: 0.05
+      auc_uses_absolute_not_relative_margin: true
+      auc_absolute_gain_example_target: 0.03
+      auc_final_gain_and_noninferiority_margins: preregister_after_pilot
+      pilot_realizations_per_class_initial: 100
+      pilot_count_is_not_power_guarantee: true
+      final_sample_size: power_and_precision_based_preregistration
+      report_all_starts_and_failures: true
+      crc_and_cnr_alone_sufficient: false
+      analytic_and_independent_mc_gain_sign_match: true
+
+phase4:
+  issue: 4
+  status: NOT_RUN
+  requires_for_optimization_superiority_claim: [G3_numerical, G3_detection]
+  benchmark_ladder:
+    channels: [10000, 30000, 100000]
+    cubic_volume_side: [128, 256]
+    streamed_events: [100000, 1000000, 10000000]
+  gates:
+    G4_memory:
+      gate_type: proposed_hardware_budget_target
+      nominal_gpu_capacity_gb: 24
+      peak_reserved_gb_max: 20
+      fixed_chunk_device_peak_growth_fraction_on_10x_events_max: 0.10
+      host_memory_streaming_required: true
+      dense_event_voxel_matrix: forbidden
+      full_detector_tuple_enumeration: forbidden
+    G4_runtime:
+      event_scaling_loglog_slope_target_max: 1.20
+      microbenchmark_repetitions_target_min: 30
+      cold_warm_and_io_reported: true
+      synchronized_gpu_timing: true
+    G4_accuracy:
+      optimized_vs_reference_fisher_relative_max: 0.01
+      stable_nonzero_geometry_gradient_relative_l2_max: 0.02
+      geometry_gradient_cosine_min: 0.99
+      gpu_adjoint_residual_max: 0.00001
+    G4_evidence:
+      independent_reproduction: required
+      all_main_figures_regenerable: required
+      license_and_data_rights_review: required_before_release
+      claims_limited_to_validated_domain: true
+      paper_acceptance_guaranteed: false
