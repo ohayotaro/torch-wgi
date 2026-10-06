@@ -1,31 +1,65 @@
 # torch-wgi
 
-WGI向け微分可能解析順投影シミュレータの研究開発リポジトリ。
+Research and development repository for a differentiable analytical forward projector for Whole Gamma Imaging (WGI).
 
-## 現在の状態
+## Current Status
 
-**研究計画・検証仕様の策定段階です。シミュレータ、テスト、MC比較、最適化実験は未実装・未実行です。** 本リポジトリの閾値は提案された研究用受入基準であり、達成結果・規格値・臨床性能を意味しません。
+**This repository is currently in the research-planning and validation-specification stage. The simulator, tests, Monte Carlo comparisons, and hardware-optimization experiments have not yet been implemented or executed.**
 
-## 研究の定義
+All numerical thresholds currently documented in this repository are proposed engineering acceptance criteria for this research program. They are not achieved results, external standards, or claims of clinical performance.
 
-同一崩壊位置でのPET応答とCompton応答を結合し、画像空間で積分する絶対計数モデルを構築します。Cone-conditioned Tube Projectorはこの結合尤度積分を低次元化する手段であり、LORとconeの幾何学的交点座標を解く手法ではありません。
+## Research Definition
 
-- 有限ボクセルでは同じサブボクセル点で応答を掛け、次にボクセル内積分する。
-- 陽電子飛程、検出効率、未検出確率、SRF、同時計数受理を明示する。
-- SDF/Soft-binningの人工的緩和幅と物理的分解能を区別する。
-- Fisher情報を固定投与量・固定撮像時間で最適化し、独立したMC/実測で検証する。
+The project models a three-gamma decay as a joint image-space likelihood: the PET response and the Compton response are evaluated for the same source location and integrated over the image basis.
 
-## ドキュメント
+The Cone-conditioned Tube Projector is a low-dimensional approximation of this joint likelihood integral. It is **not** an algebraic solver for geometric LOR–cone intersection coordinates.
 
-- [Engineering & Validation Roadmap](docs/engineering-validation-roadmap.ja.md)
-- [機械可読の検証ゲート](configs/validation-gates.yaml)
-- [実験記録テンプレート](configs/experiment-manifest.example.yaml)
-- [研究Issue](https://github.com/ohayotaro/torch-wgi/issues)
+Core modeling rules:
 
-## 開発方針
+- For a finite voxel, multiply the PET and Compton responses at the same sub-voxel location before integrating over the voxel.
+- Preserve absolute detection probability, including branching, positron range, attenuation, detector efficiency, rejected/lost events, and coincidence acceptance.
+- Keep artificial SDF/soft-binning relaxation widths separate from physical SRF widths.
+- Optimize task information under fixed source decays and acquisition time, then validate optimized designs with independent Monte Carlo data and, when available, measurements.
+- Treat diagnostic Monte Carlo truth variables as latent variables; do not leak true DOI, interaction order, or emission position into the observable model.
 
-Phase 1: 数理・勾配・随伴 → Phase 2: 物理クロスバリデーション → Phase 3: 独立データでの設計改善 → Phase 4: スケール・論文・再現可能な公開。
+The central source model is
 
-最適化用の近似と、検証用の高精度積分/MCを分離します。実験結果はコードSHA、設定、データSHA256、環境、統計的不確実性とともに保存し、PASS / FAIL / INCONCLUSIVEを区別します。
+$$
+A^J_{ij}(\theta)
+=
+\beta_3\int
+\varphi_j(x)
+P_\theta(y_i^P\mid x)
+C_\theta(y_i^C\mid x)
+\,dx,
+$$
 
-現時点でインストール可能なPythonパッケージや実行済みベンチマークはありません。具体的なモジュール構成・環境構築・実験手順はロードマップを参照してください。OSSライセンスの選択とデータ再配布権限の確認は公開リリース前の未完了タスクです。
+with expected observations
+
+$$
+\lambda_i
+=
+\sum_j A^J_{ij}(\theta)f_j+b_i.
+$$
+
+## Documentation
+
+- [Engineering & Validation Roadmap](docs/engineering-validation-roadmap.md)
+- [Machine-readable validation gates](configs/validation-gates.yaml)
+- [Experiment manifest template](configs/experiment-manifest.example.yaml)
+- [Research issues](https://github.com/ohayotaro/torch-wgi/issues)
+
+## Development Phases
+
+1. **Phase 1 — Numerical correctness:** reference joint projector, geometry gradients, adjoint consistency, quadrature convergence, SDF/soft-binning continuation.
+2. **Phase 2 — Physics cross-validation:** Geant4/GATE comparison of absolute sensitivity, SRF, spatial/energy response, and geometry derivatives.
+3. **Phase 3 — End-to-end design optimization:** nuisance-adjusted Poisson Fisher information, constrained geometry optimization, independent Monte Carlo and list-mode MLEM validation.
+4. **Phase 4 — Scale, ablation, and dissemination:** full-scale streaming implementation, GPU profiling, ablation studies, reproducible paper/OSS package.
+
+The optimization approximation and the high-accuracy validation reference must remain separate. Every accepted experiment should record the code SHA, configuration hash, data hash, environment, random seeds/quadrature, uncertainty estimate, and reproduction command, with outcomes reported as **PASS**, **FAIL**, **INCONCLUSIVE**, or **NOT RUN**.
+
+## Planned Package Structure
+
+The intended package layout is documented in the roadmap. No installable Python package or completed benchmark is claimed at the current repository state.
+
+OSS licensing, data redistribution rights, archival DOI, and author metadata remain release-time decisions.
